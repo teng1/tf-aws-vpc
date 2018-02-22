@@ -1,0 +1,17 @@
+account.json
+.idea
+.terraform
+*tfstate*
+setup/*
+crash.log
+dist
+*.zip
+logs
+*.srl
+*.crt
+*.csr
+*.key
+*.pub
+*.pem
+*.swp
+.DS_Store
