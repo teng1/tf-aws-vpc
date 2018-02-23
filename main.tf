@@ -1,6 +1,5 @@
-######
+
 # VPC
-######
 resource "aws_vpc" "vpc" {
   count = "${var.create_vpc ? 1 : 0}"
 
@@ -11,9 +10,8 @@ resource "aws_vpc" "vpc" {
   tags      { Name = "${var.name}" }
 
 }
-#################
+
 # NAT gateway
-#################
 resource "aws_eip" "nat" {
   count = "${length(var.azs)}"
   vpc   = true
@@ -21,18 +19,17 @@ resource "aws_eip" "nat" {
   lifecycle { create_before_destroy = true }
 }
 
-# resource "aws_nat_gateway" "nat" {
-#   count = "${var.create_vpc && length(var.azs) > 0 ? length(var.azs) : 0}"
-#
-#   allocation_id = "${element(aws_eip.nat.*.id, count.index)}"
-#   subnet_id     = "${element(aws_subnet.public.*.id, count.index)}"
-#
-#
-#   lifecycle { create_before_destroy = true }
-# }
-#################
+resource "aws_nat_gateway" "nat" {
+  count = "${var.create_vpc && length(var.azs) > 0 ? length(var.azs) : 0}"
+
+  allocation_id = "${aws_eip.nat.*.id}"
+  subnet_id     = "${aws_subnet.public.*.id}"
+
+
+  lifecycle { create_before_destroy = true }
+}
+
 # Private subnets
-#################
 resource "aws_subnet" "private" {
   count = "${var.create_vpc && length(var.private_subnets) > 0 ? length(var.private_subnets) : 0}"
 # vpc_id            = "${aws_vpc.vpc.*.id}"
@@ -44,24 +41,24 @@ resource "aws_subnet" "private" {
   tags      { Name = "${var.name}.${element(var.azs, count.index)}.${element(var.private_subnet_tags, count.index)}" }
   lifecycle { create_before_destroy = true }
 }
-# ######################
-# # Private route tables
-# ######################
-resource "aws_route_table" "private" {
-  vpc_id = "${var.vpc_id}"
-  count  = "${length(var.private_subnets)}"
 
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = "${element(var.nat_gateway_ids, count.index)}"
-  }
+# Private routes
+# resource "aws_route_table" "private" {
+#   vpc_id = "${aws_vpc.vpc.id}"
+#   count  = "${length(var.private_subnets)}"
+#
+#   route {
+#     cidr_block     = "0.0.0.0/0"
+#     nat_gateway_id = "${aws_nat_gateway.nat.*.id[count.index]}"
+#   }
+#
+#
+#   tags      { Name = "${var.name}.${element(var.azs, count.index)}" }
+#   lifecycle { create_before_destroy = true }
+#
+# }
 
-  tags      { Name = "${var.name}.${element(var.azs, count.index)}" }
-  lifecycle { create_before_destroy = true }
-}
-# #################
-# # Public subnets
-# #################
+# Public subnets
 resource "aws_internet_gateway" "public" {
   vpc_id = "${aws_vpc.vpc.id}"
   tags { Name = "${var.name}" }
