@@ -22,11 +22,12 @@ resource "aws_eip" "nat" {
 resource "aws_nat_gateway" "nat" {
   count = "${var.create_vpc && length(var.azs) > 0 ? length(var.azs) : 0}"
 
-  allocation_id = "${aws_eip.nat.*.id}"
-  subnet_id     = "${aws_subnet.public.*.id}"
+  allocation_id = "${element(aws_eip.nat.*.id, count.index)}"
+  subnet_id     = "${element(aws_subnet.public.*.id, count.index)}"
 
 
   lifecycle { create_before_destroy = true }
+  # depends_on = ["aws_eip.nat"]
 }
 
 # Private subnets
@@ -43,27 +44,28 @@ resource "aws_subnet" "private" {
 }
 
 # Private routes
-# resource "aws_route_table" "private" {
-#   vpc_id = "${aws_vpc.vpc.id}"
-#   count  = "${length(var.private_subnets)}"
-#
-#   route {
-#     cidr_block     = "0.0.0.0/0"
-#     nat_gateway_id = "${aws_nat_gateway.nat.*.id[count.index]}"
-#   }
-#
-#
-#   tags      { Name = "${var.name}.${element(var.azs, count.index)}" }
-#   lifecycle { create_before_destroy = true }
-#
-# }
+resource "aws_route_table" "private" {
+  vpc_id = "${aws_vpc.vpc.id}"
+  count  = "${length(var.private_subnets)}"
 
-# Public subnets
+  route {
+    cidr_block     = "0.0.0.0/0"
+    # nat_gateway_id = "${aws_nat_gateway.nat.*.id[count.index]}"
+    nat_gateway_id = "${element(aws_nat_gateway.nat.*.id, count.index)}"
+  }
+
+  tags      { Name = "${var.name}.${element(var.azs, count.index)}" }
+  lifecycle { create_before_destroy = true }
+
+}
+
+
 resource "aws_internet_gateway" "public" {
   vpc_id = "${aws_vpc.vpc.id}"
   tags { Name = "${var.name}" }
 }
 
+# Public subnets
 resource "aws_subnet" "public" {
   count             = "${length(var.public_subnets)}"
 
