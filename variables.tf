@@ -1,23 +1,23 @@
 #################
 # VPC Variables
 #################
-variable "create_vpc" {
-  description = "Controls if VPC should be created (it affects almost all resources)"
-  default     = true
-}
-
-variable "vpc_id" {
-  default = ""
-}
-
 variable "name" {
   description = "VPC name"
-  default = "vpc"
+  default     = ""
 }
 
-variable "cidr" {
+variable "cidr_block" {
   description = "CIDR range of the VPC"
-  default = ""
+  default     = ""
+}
+
+variable "internet_gateway" {
+  description = "Controls creation of an internet gateway"
+  default = false
+}
+variable "azs" {
+  description = "A list of availability zones in the region"
+  default     = []
 }
 
 variable "instance_tenancy" {
@@ -27,12 +27,17 @@ variable "instance_tenancy" {
 
 variable "enable_dns_hostnames" {
   description = "Should be true to enable DNS hostnames in the VPC"
-  default     = true
+  default     = false
 }
 
 variable "enable_dns_support" {
   description = "Should be true to enable DNS support in the VPC"
   default     = true
+}
+
+variable "assign_generated_ipv6_cidr_block" {
+  description = "Requests an Amazon-provided IPv6 CIDR block with a /56 prefix length for the VPC"
+  default     = false
 }
 
 variable "public_subnets" {
@@ -56,10 +61,11 @@ variable "private_subnet_tags" {
   default     = []
 }
 
-variable "azs" {
-  description = "A list of availability zones in the region"
-  default     = []
+variable "tags" {
+  description = "Tags created for reseources created by the module"
+  default = {}
 }
+
 
 # variable "private_subnets" {
 #   description = "A list of private subnets inside the VPC"
