@@ -66,8 +66,12 @@ variable "tags" {
   default = {}
 }
 
+variable "nat_gateway" {
+  description = "enables nat gateway in private subnets"
+  default = false
+}
 
-# variable "private_subnets" {
-#   description = "A list of private subnets inside the VPC"
-#   default     = []
+# variable "single_nat_gateway" {
+#   description =  "use a single nat gateway set to false for ha"
+#   default = false
 # }

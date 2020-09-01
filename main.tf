@@ -15,7 +15,7 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_eip" "eip" {
-  count = length(var.azs)
+  count = var.nat_gateway && length(var.azs) > 0 ? length(var.azs) : 0 
   vpc   = true
 
   lifecycle {
@@ -24,7 +24,9 @@ resource "aws_eip" "eip" {
 }
 
 resource "aws_nat_gateway" "nat_gateway" {
-  count = length(var.azs) > 0 ? length(var.azs) : 0
+
+  count = var.nat_gateway && length(var.azs) > 0 ? length(var.azs) : 0
+  # count = length(var.azs) && var.nat_gateway > 0 ?  : 0
 
   allocation_id = element(aws_eip.eip.*.id, count.index)
   subnet_id     = element(aws_subnet.public_subnet.*.id, count.index)
@@ -34,7 +36,6 @@ resource "aws_nat_gateway" "nat_gateway" {
     create_before_destroy = true
   }
 
-  # depends_on = ["aws_eip.nat"]
 }
 
 
