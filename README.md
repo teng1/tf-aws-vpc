@@ -1,4 +1,4 @@
-# tf-aws-vps
+# tf-aws-vpc
 
 Mostly intended as a lighter version of the aws-vpc module by Anton Babenko and for learning. Testing some approaches using tf 0.13 hcl language. (see example dir)
 
